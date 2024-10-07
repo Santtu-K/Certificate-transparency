@@ -44,6 +44,7 @@ keywords:
     'iforgot': 60
     'itunes': 50
     'apple': 30
+    'appleauth': 50 # The one I added
 
 # Email
     'office365': 50
