@@ -70,6 +70,8 @@ keywords:
     'flickr': 60
     'whatsapp': 60
 
+    # score > 100 --> SCAM
+
 # Cryptocurrency
     'localbitcoin': 70
     'poloniex': 60

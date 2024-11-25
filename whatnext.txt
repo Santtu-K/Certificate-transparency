@@ -1,0 +1,5 @@
+1. improve keyword heurestics
+1.1 focus on certain categories of phishing websites: banks, post offices, by reagion
+2. certificates given to urls that cross some threshold record them (in batches)
+3. use zdns to find out whether there are actual websites (or ips?) behind the certificates (or are they nxdomains)
+4. For those urls that have websites, take screenshots of them (use existing tools/libraries) 
