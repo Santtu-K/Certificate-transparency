@@ -38,6 +38,9 @@ keywords:
     'safe': 10
     'form': 10
 
+# DNS twister
+# More specific
+
 # Apple iCloud
     'appleid': 70
     'icloud': 60
@@ -139,6 +142,7 @@ keywords:
 
 tlds:
     '.ga':
+    '.ga':
     '.gq':
     '.ml':
     '.cf':
@@ -175,3 +179,6 @@ tlds:
     '.tech':
     '.science':
     '.business':
+
+tlds:
+    '.ga':
