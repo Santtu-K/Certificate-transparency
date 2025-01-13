@@ -222,7 +222,7 @@ def callback(message, context):
 
                     if ip_addresses:
                         print("Found IP addresses:")
-                        take_screenshot(ip_addresses[0], (domain+".png").lower())
+                        take_screenshot(ip_addresses[0], ("./screenshots/"+domain+"@"+str(ip_addresses[0])+".png").lower())
                         for ip in ip_addresses:
                             print(ip)
                     
