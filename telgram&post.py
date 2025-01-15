@@ -121,48 +121,55 @@ def score_domain(domain):
         if domain.endswith(t):
             score += 20
 
-    # Remove initial '*.' for wildcard certificates bug
-    if domain.startswith('*.'):
-        domain = domain[2:]
+    # # Remove initial '*.' for wildcard certificates bug
+    # if domain.startswith('*.'):
+    #     domain = domain[2:]
 
-    # Removing TLD to catch inner TLD in subdomain (ie. paypal.com.domain.com --> paypal.com.domain)
-    try:
-        res = get_tld(domain, as_object=True, fail_silently=True, fix_protocol=True)
-        domain = '.'.join([res.subdomain, res.domain])
-    except Exception:
-        pass
+    # # Removing TLD to catch inner TLD in subdomain (ie. paypal.com.domain.com --> paypal.com.domain)
+    # try:
+    #     res = get_tld(domain, as_object=True, fail_silently=True, fix_protocol=True)
+    #     domain = '.'.join([res.subdomain, res.domain])
+    # except Exception:
+    #     pass
 
-    # Higer entropy is kind of suspicious
-    score += int(round(entropy(domain)*10))
+    # # Higer entropy is kind of suspicious
+    # score += int(round(entropy(domain)*10))
 
-    # Remove lookalike characters using list from http://www.unicode.org/reports/tr39 (e.g 1 --> l)
-    domain = unconfuse(domain)
+    # # Remove lookalike characters using list from http://www.unicode.org/reports/tr39 (e.g 1 --> l)
+    # domain = unconfuse(domain)
 
     words_in_domain = re.split("\W+", domain) # ("\W+" = .)
+    words_in_domain_dash = re.split("-", domain)
+    
 
-    # ie. detect fake .com (ie. *.com-account-management.info)
-    if words_in_domain[0] in ['com', 'net', 'org']:
-        score += 10
+    # # ie. detect fake .com (ie. *.com-account-management.info)
+    # if words_in_domain[0] in ['com', 'net', 'org']:
+    #     score += 10
 
     # Testing keywords
     for word in suspicious['keywords']:
         if word in domain:
             score += suspicious['keywords'][word]
+        if domain.find(word) != -1:
+            score += suspicious['keywords'][word]
 
     # Testing Levenshtein distance for strong keywords (>= 70 points) (ie. paypol)
-    for key in [k for (k,s) in suspicious['keywords'].items() if s >= 70]:
+    for key in [k for (k,s) in suspicious['keywords'].items() if s >= 70 and len(k) > 6]:
         # Removing too generic keywords (ie. mail.domain.com)
         for word in [w for w in words_in_domain if w not in ['email', 'mail', 'cloud']]:
-            if distance(str(word), str(key)) == 1:
-                score += 70
+            if distance(str(word), str(key)) == 3:
+                score += 100
+        for word in [w for w in words_in_domain_dash if w not in ['email', 'mail', 'cloud']]:
+            if distance(str(word), str(key)) == 3:
+                score += 100
 
-    # Lots of '-' (ie. www.paypal-datacenter.com-acccount-alert.com)
-    if 'xn--' not in domain and domain.count('-') >= 4:
-        score += domain.count('-') * 3
+    # # Lots of '-' (ie. www.paypal-datacenter.com-acccount-alert.com)
+    # if 'xn--' not in domain and domain.count('-') >= 4:
+    #     score += domain.count('-') * 3
 
-    # Deeply nested subdomains (ie. www.paypal.com.security.accountupdate.gq)
-    if domain.count('.') >= 3:
-        score += domain.count('.') * 3
+    # # Deeply nested subdomains (ie. www.paypal.com.security.accountupdate.gq)
+    # if domain.count('.') >= 3:
+    #     score += domain.count('.') * 3
 
     return score
 
@@ -221,7 +228,7 @@ def callback(message, context):
 
                     if ip_addresses:
                         print("Found IP addresses:")
-                        take_screenshot(ip_addresses[0], ("./screenshots/"+domain+"@"+str(ip_addresses[0])+".png").lower())
+                        take_screenshot(ip_addresses[0], ("./ssTG/"+domain+"@"+str(ip_addresses[0])+".png").lower())
                         for ip in ip_addresses:
                             print(ip)
                     

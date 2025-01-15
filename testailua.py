@@ -1,114 +1,81 @@
+# import time
+# from selenium import webdriver
+# from selenium.webdriver.chrome.service import Service
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.chrome.options import Options
+# import sys
+# import os
+# import threading
+# from multiprocessing import Process
+
+# def moveon(driver):
+#     print("Time to move on.")
+#     driver.quit()
+
+# def take_screenshot(ip_address, output_file="screenshot.png"):
+#     # Validate IP address format
+#     import re
+#     ipv4_pattern = r'\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b'
+#     if not re.match(ipv4_pattern, ip_address):
+#         print("Invalid IP address format.")
+#         return
+
+#     # Prepare Chrome options
+#     chrome_options = Options()
+#     chrome_options.add_argument("--headless")  # Run browser in headless mode (no GUI)
+#     chrome_options.add_argument("--disable-gpu")  # Disable GPU for better compatibility
+#     chrome_options.add_argument("--window-size=1920,1080")  # Set window size
+
+#     # Set up the Chrome WebDriver
+#     service = Service("./chromedriver")  # Replace "chromedriver" with the path to your ChromeDriver if necessary
+#     driver = webdriver.Chrome(service=service, options=chrome_options)
+
+#     try:
+#         # Construct the URL
+#         url = f"http://{ip_address}"
+#         print(f"Accessing {url}...")
+
+#         driver.set_page_load_timeout(3)
+#         # Open the website
+#         driver.get(url)
+        
+#         print("there0")
+#         # # Wait for the page to load completely
+#         # driver.implicitly_wait(3)
+
+#         # Wait for the page to load completely
+#         #driver.implicitly_wait(5)
+
+#         # Take a screenshot
+#         screenshot_path = os.path.abspath(output_file)
+#         driver.save_screenshot(screenshot_path)
+#         print(f"Screenshot saved as: {screenshot_path}")
+    
+#     except Exception as e:
+#         print(f"An error occurred: ")
+    
+#     finally:
+#         driver.quit()
+
+# def long_running_task():
+#     while True:
+#         time.sleep(1)
+
+# if __name__ == '__main__':
+#     print("here0")
+#     p = Process(target=take_screenshot("100.65.191.24"))
+#     #p = Process(target=long_running_task)
+#     print("here1")
+#     p.start()
+#     print("here2")
+#     p.join(timeout=3)
+#     print("here3")
+#     if p.is_alive():
+#         print("Timeout! Terminating process.")
+#         p.terminate()
+#         p.join()
 import re
-import math
+words_in_domain = re.split("-", "domain-test") # ("\W+" = .)
+print(words_in_domain)
 
-import certstream
-import tqdm
-import yaml
-import time
-import os
-from Levenshtein import distance
-from termcolor import colored, cprint
-from tld import get_tld
-
-#from confusables import unconfuse
-
-certstream_url = 'wss://certstream.calidog.io'
-
-log_suspicious = os.path.dirname(os.path.realpath(__file__))+'/suspicious_domains_'+time.strftime("%Y-%m-%d")+'.log'
-
-suspicious_yaml = os.path.dirname(os.path.realpath(__file__))+'/suspicious.yaml'
-
-external_yaml = os.path.dirname(os.path.realpath(__file__))+'/external.yaml'
-
-
-
-#pbar = tqdm.tqdm(desc='certificate_update', unit='cert')
-
-
-# print("log_suspicious:",log_suspicious)
-
-# print("suspicious_yaml:",suspicious_yaml)
-
-# testi = os.path.realpath(__file__)
-# print("testi:",testi)
-
-# testi = os.path.dirname("/nuppi/nappi/tappi")
-# print("testi:",testi)
-
-
-
-from confusables import unconfuse
-
-domain = "paypal.com.domain.com"
-words_in_domain = re.split("\W+", domain)
-
-merkkijono = "testa1lua 0mena 11 𝓗℮𝐥1೦ 𝓗℮𝐥1೦" #𝓗℮𝐥1೦
-
-hamm = unconfuse(merkkijono)
-print("hamm:", hamm)
-
-
-def testi(muuttuja):
-    print("tstaus:", muuttuja + tuntematon)
-
-tuntematon = 10
-
-testi(20)
-
-with open(suspicious_yaml, 'r') as f:
-        suspicious = yaml.safe_load(f)
-
-print("sus:", type(suspicious))
-
-sk = {
-  "brand": "Ford",
-  "model": "Mustang",
-  "year": 1964,
-  "year": 1999,
-
-  "kw": {"perse": "kuusysi", "kassi": 420}
-}
-
-print("sk:", sk)
-print("ali:", sk["kw"]["kassi"])
-
-score = 0
-for word in suspicious['keywords']:
-    if word in domain:
-        print("word:", word)
-        print("poang:", suspicious['keywords'][word])
-        score += suspicious['keywords'][word]
-
-print("score1:", score)
-
-
-for key in [k for (k,s) in suspicious['keywords'].items() if s >= 70]:
-    # Removing too generic keywords (ie. mail.domain.com)
-    for word in [w for w in words_in_domain if w not in ['email', 'mail', 'cloud']]:
-        if distance(str(word), str(key)) == 1:
-            score += 70
-
-print("dom:", domain)
-print("wid:", words_in_domain)
-
-for word in [w for w in words_in_domain if w not in ['paypal', 'mail', 'cloud']]:
-    print("hepulihei:", word)
-    if distance(str(word), str(key)) == 1:
-        score += 70
-
-alus = 'xn--'
-
-print("xn--", alus)
-
-
-domain = "paypal.com.domain.com"
-
-
-
-print("wrdsindom:", words_in_domain)
-
-res = get_tld(domain, as_object=True, fail_silently=True, fix_protocol=True)
-print("res:", res)
-domain = '.'.join([res.subdomain, res.domain])
-print("domain:",domain)
-print("yrit:", 'vipatin'.join(["TOIMI", "KYLA"]))
+print("asd" in "lkjasdmk")
