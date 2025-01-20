@@ -42,7 +42,7 @@ suspicious_yaml = os.path.dirname(os.path.realpath(__file__))+'/suspicious.yaml'
 external_yaml = os.path.dirname(os.path.realpath(__file__))+'/external.yaml'
 pbar = tqdm.tqdm(desc='certificate_update', unit='cert') #progress bar
 
-def take_screenshot(ip_address, output_file):
+def take_screenshot(ip_address, URL, output_file):
     # Validate IP address format
     import re
     ipv4_pattern = r'\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b'
@@ -62,11 +62,11 @@ def take_screenshot(ip_address, output_file):
 
     try:
         # Construct the URL
-        url = f"http://{ip_address}"
+        url = f"http://{URL}"
         print(f"Accessing {url}...")
         
         #Set timeout
-        driver.set_page_load_timeout(3)
+        driver.set_page_load_timeout(10)
         # Open the website
         driver.get(url)
 
@@ -157,10 +157,10 @@ def score_domain(domain):
     for key in [k for (k,s) in suspicious['keywords'].items() if s >= 70 and len(k) > 6]:
         # Removing too generic keywords (ie. mail.domain.com)
         for word in [w for w in words_in_domain if w not in ['email', 'mail', 'cloud']]:
-            if distance(str(word), str(key)) == 3:
+            if distance(str(word), str(key)) == 1:
                 score += 100
         for word in [w for w in words_in_domain_dash if w not in ['email', 'mail', 'cloud']]:
-            if distance(str(word), str(key)) == 3:
+            if distance(str(word), str(key)) == 1:
                 score += 100
 
     # # Lots of '-' (ie. www.paypal-datacenter.com-acccount-alert.com)
@@ -170,6 +170,9 @@ def score_domain(domain):
     # # Deeply nested subdomains (ie. www.paypal.com.security.accountupdate.gq)
     # if domain.count('.') >= 3:
     #     score += domain.count('.') * 3
+
+    if len(domain) >= 20:
+        score = 0
 
     return score
 
@@ -228,7 +231,7 @@ def callback(message, context):
 
                     if ip_addresses:
                         print("Found IP addresses:")
-                        take_screenshot(ip_addresses[0], ("./ssTG/"+domain+"@"+str(ip_addresses[0])+".png").lower())
+                        take_screenshot(ip_addresses[0], ("./20.1/"+domain+"@"+str(ip_addresses[0])+".png").lower())
                         for ip in ip_addresses:
                             print(ip)
                     
