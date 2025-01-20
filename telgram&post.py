@@ -23,8 +23,6 @@ from tld import get_tld
 import subprocess
 import re
 
-from confusables import unconfuse
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -42,13 +40,13 @@ suspicious_yaml = os.path.dirname(os.path.realpath(__file__))+'/suspicious.yaml'
 external_yaml = os.path.dirname(os.path.realpath(__file__))+'/external.yaml'
 pbar = tqdm.tqdm(desc='certificate_update', unit='cert') #progress bar
 
-def take_screenshot(ip_address, URL, output_file):
+def take_screenshot(URL, timeout, output_file):
     # Validate IP address format
     import re
-    ipv4_pattern = r'\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b'
-    if not re.match(ipv4_pattern, ip_address):
-        print("Invalid IP address format.")
-        return
+    # ipv4_pattern = r'\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b'
+    # if not re.match(ipv4_pattern, ip_address):
+    #     print("Invalid IP address format.")
+    #     return
 
     # Prepare Chrome options
     chrome_options = Options()
@@ -62,11 +60,11 @@ def take_screenshot(ip_address, URL, output_file):
 
     try:
         # Construct the URL
-        url = f"http://{URL}"
+        url = f"https://{URL}"
         print(f"Accessing {url}...")
         
         #Set timeout
-        driver.set_page_load_timeout(10)
+        driver.set_page_load_timeout(timeout)
         # Open the website
         driver.get(url)
 
@@ -117,9 +115,15 @@ def score_domain(domain):
         int: the score of `domain`.
     """
     score = 0
-    for t in suspicious['tlds']: # ends in weird tld
-        if domain.endswith(t):
-            score += 20
+
+    if "telegraph" in domain:
+        return 0
+
+    if len(domain) >= 20:
+        return 0
+    # for t in suspicious['tlds']: # ends in weird tld
+    #     if domain.endswith(t):
+    #         score += 20
 
     # # Remove initial '*.' for wildcard certificates bug
     # if domain.startswith('*.'):
@@ -152,9 +156,9 @@ def score_domain(domain):
             score += suspicious['keywords'][word]
         if domain.find(word) != -1:
             score += suspicious['keywords'][word]
-
+    
     # Testing Levenshtein distance for strong keywords (>= 70 points) (ie. paypol)
-    for key in [k for (k,s) in suspicious['keywords'].items() if s >= 70 and len(k) > 6]:
+    for key in [k for (k,s) in suspicious['keywords'].items() if s >= 70 and len(k) > 7]:
         # Removing too generic keywords (ie. mail.domain.com)
         for word in [w for w in words_in_domain if w not in ['email', 'mail', 'cloud']]:
             if distance(str(word), str(key)) == 1:
@@ -171,8 +175,7 @@ def score_domain(domain):
     # if domain.count('.') >= 3:
     #     score += domain.count('.') * 3
 
-    if len(domain) >= 20:
-        score = 0
+    
 
     return score
 
@@ -211,10 +214,6 @@ def callback(message, context):
                     "{} (score={})".format(colored(domain, attrs=['underline']), score))
 
             if score >= 75:
-                tqdm.tqdm.write(
-                    "[?] ZDNS: "
-                    "{}".format(domain.lower())
-                )
                 # subprocess.run(["echo", "\"{}\"".format(domain.lower()), "|" , "/zdns/zdns", "A"])
                 res = subprocess.run(["./zdns/zdns", "A", "\"{}\"".format(domain.lower()), "--verbosity=1"], capture_output=True)
                 zdns_output = str(res)
@@ -228,35 +227,16 @@ def callback(message, context):
                     print("Found website/IP @ behind URL:", (domain).lower())
 
                     ip_addresses = find_ip_addresses(zdns_output)
-
+                    
+                    timeout = 7
                     if ip_addresses:
                         print("Found IP addresses:")
-                        take_screenshot(ip_addresses[0], ("./20.1/"+domain+"@"+str(ip_addresses[0])+".png").lower())
-                        for ip in ip_addresses:
-                            print(ip)
-                    
-                    
+                        take_screenshot(domain, timeout=timeout, output_file=("./screenshots/nopath/"+domain+".png").lower())
+                        
+                        common_paths = ["login", "app", "en"]
 
-                    
-                    # # Extracting the IP4 address
-                    # i_answers = zdns_output.find("answers")
-                    # i_ip4 = zdns_output.find("\"type\":\"A\"")
-                    
-                    # str_filtered = zdns_output[i_answers:i_ip4]
-                    # print("filtered:", str_filtered)
-
-                    # i_answer = zdns_output.find("answer")
-                    # i_class = zdns_output.find("class")
-
-
-
-
-                    
-
-                # # print(res.stdout)
-                tqdm.tqdm.write(
-                    "[?] ZDNS: "
-                    )
+                        for path in common_paths:
+                            take_screenshot(domain+"/"+path, timeout=timeout, output_file=("./screenshots/"+path+"/"+domain+".png").lower())
                 with open(log_suspicious, 'a') as f:
                     f.write("{}\n".format(domain))
 

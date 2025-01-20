@@ -58,7 +58,7 @@ if __name__ == '__main__':
     common_paths = ["/login", "/app", "/en"]
 
     for path in common_paths:
-        take_screenshot("telegram-ops.com" + path, 5)
+        take_screenshot("teleglist.guru" + path, 5)
     #p = Process(target=long_running_task)
 # import re
 # words_in_domain = re.split("-", "domain-test") # ("\W+" = .)
