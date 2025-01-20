@@ -5,5 +5,5 @@ s = SafeBrowsing(key)
 
 
 
-r = s.lookup_urls(['https://telegrnm.cc/'])
+r = s.lookup_urls(['https://telegram-skt.com/login'])
 print(r)
