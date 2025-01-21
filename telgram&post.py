@@ -231,12 +231,12 @@ def callback(message, context):
                     timeout = 7
                     if ip_addresses:
                         print("Found IP addresses:")
-                        take_screenshot(domain, timeout=timeout, output_file=("./screenshots/nopath/"+domain+".png").lower())
+                        take_screenshot(domain, timeout=timeout, output_file=("./ssOverNight/nopath/"+domain+".png").lower())
                         
                         common_paths = ["login", "app", "en"]
 
                         for path in common_paths:
-                            take_screenshot(domain+"/"+path, timeout=timeout, output_file=("./screenshots/"+path+"/"+domain+".png").lower())
+                            take_screenshot(domain+"/"+path, timeout=timeout, output_file=("./ssOverNight/"+path+"/"+domain+".png").lower())
                 with open(log_suspicious, 'a') as f:
                     f.write("{}\n".format(domain))
 
