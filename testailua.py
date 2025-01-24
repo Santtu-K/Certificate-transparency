@@ -55,10 +55,10 @@ def long_running_task():
         time.sleep(1)
 
 if __name__ == '__main__':
-    common_paths = ["/login", "/app", "/en"]
+    common_paths = [""]
 
     for path in common_paths:
-        take_screenshot("teleglist.guru" + path, 5)
+        take_screenshot("telegarny.boutique" + path, 5)
     #p = Process(target=long_running_task)
 # import re
 # words_in_domain = re.split("-", "domain-test") # ("\W+" = .)

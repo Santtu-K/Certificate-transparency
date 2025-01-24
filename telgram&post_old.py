@@ -97,6 +97,12 @@ def find_ip_addresses(input_string):
 
     return ip_addresses
 
+def entropy(string):
+    """Calculates the Shannon entropy of a string"""
+    prob = [ float(string.count(c)) / len(string) for c in dict.fromkeys(list(string)) ]
+    entropy = - sum([ p * math.log(p) / math.log(2.0) for p in prob ])
+    return entropy
+
 def score_domain(domain):
     """Score `domain`.
 
@@ -115,10 +121,35 @@ def score_domain(domain):
 
     if len(domain) >= 20:
         return 0
+    # for t in suspicious['tlds']: # ends in weird tld
+    #     if domain.endswith(t):
+    #         score += 20
+
+    # # Remove initial '*.' for wildcard certificates bug
+    # if domain.startswith('*.'):
+    #     domain = domain[2:]
+
+    # # Removing TLD to catch inner TLD in subdomain (ie. paypal.com.domain.com --> paypal.com.domain)
+    # try:
+    #     res = get_tld(domain, as_object=True, fail_silently=True, fix_protocol=True)
+    #     domain = '.'.join([res.subdomain, res.domain])
+    # except Exception:
+    #     pass
+
+    # # Higer entropy is kind of suspicious
+    # score += int(round(entropy(domain)*10))
+
+    # # Remove lookalike characters using list from http://www.unicode.org/reports/tr39 (e.g 1 --> l)
+    # domain = unconfuse(domain)
 
     words_in_domain = re.split("\W+", domain) # ("\W+" = .)
     words_in_domain_dash = re.split("-", domain)
     
+
+    # # ie. detect fake .com (ie. *.com-account-management.info)
+    # if words_in_domain[0] in ['com', 'net', 'org']:
+    #     score += 10
+
     # Testing keywords
     for word in suspicious['keywords']:
         if word in domain:
@@ -135,6 +166,17 @@ def score_domain(domain):
         for word in [w for w in words_in_domain_dash if w not in ['email', 'mail', 'cloud']]:
             if distance(str(word), str(key)) == 1:
                 score += 100
+
+    # # Lots of '-' (ie. www.paypal-datacenter.com-acccount-alert.com)
+    # if 'xn--' not in domain and domain.count('-') >= 4:
+    #     score += domain.count('-') * 3
+
+    # # Deeply nested subdomains (ie. www.paypal.com.security.accountupdate.gq)
+    # if domain.count('.') >= 3:
+    #     score += domain.count('.') * 3
+
+    
+
     return score
 
 
@@ -150,10 +192,33 @@ def callback(message, context):
             pbar.update(1)
             score = score_domain(domain.lower())
 
+            # If issued from a free CA = more suspicious
+            if "Let's Encrypt" == message['data']['leaf_cert']['issuer']['O']:
+                score += 10
+
             if score >= 100:
+                tqdm.tqdm.write(
+                    "[!] Suspicious: "
+                    "{} (score={})".format(colored(domain, 'red', attrs=['underline', 'bold']), score))
+            elif score >= 90:
+                tqdm.tqdm.write(
+                    "[!] Suspicious: "
+                    "{} (score={})".format(colored(domain, 'red', attrs=['underline']), score))
+            elif score >= 80:
+                tqdm.tqdm.write(
+                    "[!] Likely    : "
+                    "{} (score={})".format(colored(domain, 'yellow', attrs=['underline']), score))
+            elif score >= 65:
+                tqdm.tqdm.write(
+                    "[+] Potential : "
+                    "{} (score={})".format(colored(domain, attrs=['underline']), score))
+
+            if score >= 75:
+                # subprocess.run(["echo", "\"{}\"".format(domain.lower()), "|" , "/zdns/zdns", "A"])
                 res = subprocess.run(["./zdns/zdns", "A", "\"{}\"".format(domain.lower()), "--verbosity=1"], capture_output=True)
                 zdns_output = str(res)
 
+                #print("printti:",zdns_output)
                 URL_fake = zdns_output.find("NXDOMAIN") # Not found
                 URL_real = zdns_output.find("NOERROR") # Found
                 if URL_fake != -1:
@@ -164,7 +229,7 @@ def callback(message, context):
                     ip_addresses = find_ip_addresses(zdns_output)
                     
                     timeout = 7
-                    if len(ip_addresses) > 1:
+                    if ip_addresses:
                         print("Found IP addresses:")
                         take_screenshot(domain, timeout=timeout, output_file=("./ssOverNight/nopath/"+domain+".png").lower())
                         

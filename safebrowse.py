@@ -5,5 +5,5 @@ s = SafeBrowsing(key)
 
 
 
-r = s.lookup_urls(['http://telegreat.auction'])
+r = s.lookup_urls(['http://telegrail.skin/'])
 print(r)
